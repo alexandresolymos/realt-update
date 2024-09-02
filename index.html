@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      .increase {
+        color: green;
+      }
+
+      .decrease {
+        color: red;
+      }
+
+      /* Style global pour le tableau */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+        margin: 20px 0;
+      }
+
+      /* Style pour les en-têtes de colonne */
+      th {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px;
+        text-align: left;
+      }
+
+      /* Style pour les cellules de données */
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+
+      /* Style pour les lignes alternées */
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      /* Style pour les lignes survolées */
+      tr:hover {
+        background-color: #ddd;
+      }
+
+      /* Style pour les en-têtes du tableau */
+      caption {
+        font-size: 1.5em;
+        margin: 10px;
+        font-weight: bold;
+      }
+
+      /* Style pour les cellules avec des pourcentages */
+      td.percent {
+        text-align: right;
+        color: #333;
+      }
+
+    </style>
+    <title>Analyse des Pourcentages de Loyer</title>
+  </head>
+
+  <body>
+    <input type="file" id="fileInput" accept=".txt">
+    <table id="rentDataTable" border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Adresse</th>
+          <th>Ancien Pourcentage de Loyer</th>
+          <th>Nouveau Pourcentage de Loyer</th>
+          <th>Changement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Les données seront insérées ici -->
+      </tbody>
+    </table>
+    <script>
+      // Liste des adresses statiques pour les tests
+      const testData = [
+
+        "10024-10028 Appoline St, Detroit, MI 48227 (10.24% >> 10.48%)",
+        "20200 Lesure St, Detroit, MI 48235 (13.14% >> 13.68%)",
+        "13991 Warwick St, Detroit, MI 48223 (10.73% >> 11.26%)",
+        "272 N.E. 42nd Court, Deerfield Beach, FL 33064 (4.41% >> 4.61%)",
+        "9309 Courville St, Detroit, MI 48224 (12.83% >> 13.34%)",
+        "15048 Freeland St, Detroit, MI 48227 (11.87% >> 12.4%)",
+        "10084 Grayton St, Detroit, MI 48224 (11.72% >> 12.21%)",
+        "9717 Everts St, Detroit, MI 48224 (11.81% >> 12.35%)",
+        "16200 Fullerton Ave, Detroit, MI 48227 (12.41% >> 12.57%)",
+        "8342 Schaefer Hwy, Detroit, MI 48228 (12.94% >> 13.49%)",
+        "25097 Andover Dr, Dearborn Heights, MI 48125 (10.46% >> 10.97%)",
+        "18276 Appoline St, Detroit, MI 48235 (11.16% >> 11.54%)",
+        "15634 Liberal St, Detroit, MI 48205 (14.04% >> 14.65%)",
+        "18900 Mansfield St, Detroit, MI 48235 (15.45% >> 16.19%)",
+        "9165 Kensington Ave, Detroit, MI 48224 (12.3% >> 12.86%)",
+        "6923 Greenview Ave, Detroit, MI 48228 (11.61% >> 12.18%)",
+        "4340 East 71, Cleveland, OH 44105 (13.08% >> 13.63%)",
+        "5733 Neely Ln, Montgomery, AL 36116 (7.28% >> 7.42%)",
+        "10822 Whitehill St, Detroit, MI 48224 (9.03% >> 9.28%)",
+        "16051 E State Fair St, Detroit, MI 48205 (9.86% >> 10.08%)",
+        "14903 Promenade St, Detroit, MI 48213 (9.87% >> 10.1%)",
+        "13510 Dale St, Detroit, MI 48223 (9.23% >> 9.47%)",
+        "15015 Ward Ave, Detroit, MI 48227 (9.62% >> 9.85%)",
+        "12236 Sorrento Ave, Detroit, MI 48227 (9.71% >> 9.95%)",
+        "2476 Clements St, Detroit, MI 48238 (9.76% >> 9.97%)",
+        "9950 Beaconsfield St, Detroit, MI 48224 (9.15% >> 9.46%)",
+        "15800 Tacoma St, Detroit, MI 48205 (9.15% >> 9.39%)",
+        "17157 Rowe St, Detroit, MI 48205 (9.17% >> 9.38%)",
+        "20240 Rogge St, Detroit, MI 48234 (9.29% >> 9.51%)",
+        "11125 Craft St, Detroit, MI 48224 (9.21% >> 9.45%)",
+        "3015 Northwestern St, Detroit, MI 48206 (9.47% >> 9.68%)",
+        "18415 Fielding St, Detroit, MI 48219 (9.4% >> 9.61%)",
+        "12130 Manor St, Detroit, MI 48204 (10.11% >> 10.34%)",
+        "1115 S. Troy St, Chicago, IL 60612 (10.9% >> 11.53%)",
+        "8181 Bliss St, Detroit, MI 48234 (12.5% >> 12.76%)",
+        "11201 College St, Detroit, MI 48205 (12.04% >> 12.66%)",
+        "14825 Wilfred St, Detroit, MI 48213 (10.67% >> 11.18%)",
+        "9920 Bishop St, Detroit, MI 48224 (11.83% >> 12.34%)",
+        "1244 S. Avers St, Chicago, IL 60623 (10.4% >> 10.86%)",
+        "4680 Buckingham Ave, Detroit, MI 48224 (11% >> 11.51%)",
+        "14229 Wilshire Dr, Detroit, MI 48213 (10.88% >> 11.37%)",
+        "17809 Charest St, Detroit, MI 48212 (11.34% >> 11.82%)",
+        "10639 Stratman St, Detroit, MI 48224 (10.7% >> 11.16%)",
+        "15753 Hartwell St, Detroit, MI 48227 (13.35% >> 14.02%)",
+        "17500 Evergreen Rd, Detroit, MI 48219 (11.23% >> 11.54%)",
+        "10700 Whittier Ave, Detroit, MI 48224 (12.33% >> 12.68%)",
+        "14918 Joy Rd, Detroit, MI 48228 (12.01% >> 12.38%)",
+        "1542 S Ridgeway Ave, Chicago, IL 60623 (10.59% >> 11.03%)",
+        "11078 Longview St, Detroit, MI 48213 (13.09% >> 13.34%)",
+        "19996 Joann Ave, Detroit, MI 48205 (10.94% >> 11.23%)",
+        "12409 Whitehill St, Detroit, MI 48224 (11.69% >> 11.87%)",
+        "13606 Winthrop St, Detroit, MI 48227 (12.29% >> 12.72%)",
+        "11957 Olga St, Detroit, MI 48213 (10.96% >> 11.11%)",
+        "12405 Santa Rosa Dr, Detroit, MI 48204 (11.1% >> 11.6%)",
+        "1815 S Avers Ave, Chicago, IL 60623 (11.1% >> 11.35%)",
+        "14066 Santa Rosa Dr, Detroit, MI 48238 (12.34% >> 12.52%)",
+        "13370 Wilshire Dr, Detroit, MI 48213 (11.1% >> 11.3%)",
+        "10021 Grayton St, Detroit, MI 48224 (11.49% >> 11.8%)",
+        "15203 Park Grove St, Detroit, MI 48205 (11.84% >> 12.18%)",
+        "738-742 E 87th Pl, Chicago, IL 60619 (11.4% >> 11.67%)",
+        "893-895 W Philadelphia St, Detroit, MI 48202 (11.57% >> 11.82%)",
+        "10003 Pinehurst St, Detroit, MI 48204 (11.13% >> 11.34%)",
+        "11217 Greenwich Ave, Cleveland, OH 44105 (11.4% >> 11.64%)",
+        "2318-2324 W Marquette Rd, Chicago, IL 60636 (11.41% >> 12.2%)",
+        "19191 Bradford Ave, Detroit, MI 48205 (14.48% >> 14.97%)",
+        "1521-1523 S Drake Ave, Chicago, IL 60623 (10.79% >> 10.99%)",
+        "5278-5280 Drexel St, Detroit, MI 48213 (17.58% >> 18.21%)",
+        "15039 Ward Ave, Detroit, MI 48227 (12.36% >> 12.88%)",
+        "18481 Westphalia St, Detroit, MI 48205 (10.43% >> 10.85%)",
+        "10617 Hathaway Ave, Cleveland, OH 44108 (14.82% >> 15.37%)",
+        "9151 Whittier Ave, Detroit, MI 48224 (9.66% >> 9.98%)",
+        "212 N Park Ave, Jackson, MI 49201 (11.59% >> 12.2%)",
+        "3947 Fairview St, Detroit, MI 48214 (9.15% >> 9.65%)",
+        "3996 Lillibridge St, Detroit, MI 48214 (9.15% >> 9.63%)",
+        "4025 Fairview St, Detroit, MI 48214 (9.53% >> 10.06%)",
+        "4421 Lillibridge St, Detroit, MI 48214 (9.27% >> 9.71%)",
+        "3880 Fairview St, Detroit, MI 48214 (9.36% >> 9.85%)",
+        "3888 Fairview St, Detroit, MI 48214 (9.55% >> 9.99%)",
+        "4526 Lillibridge St, Detroit, MI 48214 (9.24% >> 9.73%)",
+        "3946 Fairview St, Detroit, MI 48214 (9.21% >> 9.7%)",
+        "4628 Lillibridge St, Detroit, MI 48214 (9.11% >> 9.62%)",
+        "4437 Lillibridge St, Detroit, MI 48214 (9.42% >> 9.93%)",
+        "3728 Atkinson St, Detroit, MI 48206 (10.06% >> 10.55%)",
+        "3406 Medbury St, Detroit, MI 48211 (10.07% >> 10.52%)",
+        "5837 Moran St, Detroit, MI 48211 (10.04% >> 10.53%)",
+        "10993 Worden St, Detroit, MI 48224 (9.54% >> 10.06%)",
+        "11924 Wayburn St, Detroit, MI 48224 (9.52% >> 9.99%)",
+        "16012 Maddelein St, Detroit, MI 48205 (9.45% >> 9.91%)",
+        "8821 Prairie St, Detroit, MI 48204 (9.31% >> 9.84%)",
+        "18524 Patton St, Detroit, MI 48219 (10.5% >> 10.97%)",
+        "12145 Kentucky St, Detroit, MI 48204 (9.37% >> 9.82%)",
+        "18613 Anglin St, Detroit, MI 48234 (9.51% >> 10.01%)",
+        "11380 Pinehurst St, Detroit, MI 48204 (9.37% >> 9.84%)",
+        "9244 Mendota St, Detroit, MI 48204 (9.44% >> 9.95%)",
+        "433 Kitchener St, Detroit, MI 48215 (9.32% >> 9.8%)",
+        "450 Kitchener St, Detroit, MI 48215 (9.36% >> 9.84%)",
+        "13000 Promenade St, Detroit, MI 48213 (9.15% >> 9.63%)",
+        "17310 Bentler St, Detroit, MI 48219 (8.97% >> 9.92%)",
+        "15110 Freeland St, Detroit, MI 48227 (9.1% >> 9.62%)",
+        "14260 Roselawn St, Detroit, MI 48238 (10.03% >> 10.46%)",
+        "14916 Hubbell St, Detroit, MI 48227 (9.44% >> 9.97%)",
+        "15824 Cheyenne St, Detroit, MI 48235 (9.13% >> 9.62%)",
+        "18933 Fairport St, Detroit, MI 48205 (9.07% >> 9.54%)",
+        "15084 Lesure St, Detroit, MI 48227 (9.15% >> 9.61%)",
+        "17326 Albion St, Detroit, MI 48234 (9.1% >> 9.57%)",
+        "4021 E Outer Dr, Detroit, MI 48234 (9.19% >> 9.7%)",
+        "9117 Manor St, Detroit, MI 48204 (9.43% >> 9.86%)",
+        "1 Holdings S Arcola St, Detroit, MI 48234 (10.23% >> 10.77%)",
+        "1 Holdings Palmetto St, Detroit, MI 48234 (10.11% >> 10.54%)",
+        "19643 Rogge St, Detroit, MI 48234 (9.13% >> 9.61%)",
+        "1 Holdings Tappan St, Detroit, MI 48234 (10.18% >> 10.75%)",
+        "1 Holdings Milton St, Detroit, MI 48234 (10.17% >> 10.7%)",
+        "1 Holdings N Arcola St, Detroit, MI 48234 (10.39% >> 10.67%)",
+        "2 Holdings Milton St, Detroit, MI 48234 (10.38% >> 10.65%)",
+        "2 Holdings Tappan St, Detroit, MI 48234 (10.23% >> 10.49%)",
+        "2 Holdings Arcola St, Detroit, MI 48234 (10.07% >> 10.59%)",
+        "5601 S Wood St, Chicago, IL 60636 (10.63% >> 11.31%)",
+        "7430 Nett St, Detroit, MI 48213 (12.31% >> 12.59%)",
+        "116 Monterey St, Highland Park, MI 48203 (10.83% >> 10.98%)",
+        "11758 Christy St, Detroit, MI 48205 (11.7% >> 11.91%)",
+        "12410 Hamburg St, Detroit, MI 48205 (11.71% >> 12.01%)",
+        "14839 Wisconsin St, Detroit, MI 48238 (12.24% >> 12.85%)",
+        "15379 Patton St, Detroit, MI 48223 (12.83% >> 13.36%)",
+        "15841 Coram St, Detroit, MI 48205 (10.38% >> 10.78%)",
+        "15208 Bringard Dr, Detroit, MI 48205 (11.57% >> 12.02%)",
+        "882-884 Pingree St, Detroit, MI 48202 (11.88% >> 12.35%)",
+        "19154 Sherwood St, Detroit, MI 48234 (11.4% >> 11.71%)",
+        "18949 Fenmore St, Detroit, MI 48235 (11.67% >> 11.87%)",
+        "12747-12749 Nashville St, Detroit, MI 48205 (11.85% >> 12.38%)",
+        "2550 Greenway St, Toledo, OH 43607 (12.93% >> 13.48%)",
+        "13041 Hayes St, Detroit, MI 48205 (12.92% >> 13.33%)",
+        "8366 Schaefer Hwy, Detroit, MI 48228 (12.67% >> 12.89%)",
+        "1204 E Manhattan Blvd, Toledo, OH 43608 (13.64% >> 13.92%)",
+        "128 E Weber St, Toledo, OH 43608 (16.01% >> 16.51%)",
+        "9171 Whittier Ave, Detroit, MI 48224 (12.64% >> 13.06%)",
+        "18668 St Louis St, Detroit, MI 48234 (11.79% >> 11.99%)",
+        "19144 Riopelle St, Highland Park, MI 48203 (12.4% >> 12.99%)",
+        "2661-2663 Cortland St, Detroit, MI 48206 (16.48% >> 17.2%)",
+        "20160 Conant St, Detroit, MI 48234 (12.42% >> 12.76%)",
+        "5517-5519 Elmhurst St, Detroit, MI 48204 (10.92% >> 11.49%)",
+        "12730 Wade St, Detroit, MI 48213 (11.32% >> 11.61%)",
+        "2626-2638 Wreford St, Detroit, MI 48208 (11.31% >> 11.85%)",
+        "4000 Taylor St, Detroit, MI 48204 (11.13% >> 11.37%)",
+        "8017-8019 S Paulina St, Chicago, IL 60620 (8.89% >> 9.44%)",
+        "9135 Yorkshire Rd, Detroit, MI 48224 (10.88% >> 11.5%)",
+        "15440-15444 St Clair Ave, Cleveland, OH 44110 (11.65% >> 12.03%)",
+        "13245 Monica St, Detroit, MI 48238 (11.84% >> 12.32%)",
+        "1907 Ottawa Dr, Toledo, OH 43606 (11.03% >> 11.57%)",
+        "425 Steward Ave, Jackson, MI 49201 (11.37% >> 11.66%)",
+        "3323 Waverly St, Detroit, MI 48238 (10.72% >> 11.25%)",
+        "19268 Eureka St, Detroit, MI 48234 (10.39% >> 11.07%)",
+        "3747 Scovel Pl, Detroit, MI 48208 (12.79% >> 13.41%)",
+        "16767 Greenfield Rd, Detroit, MI 48235 (11.42% >> 11.83%)",
+        "10435-10445 Cadieux Rd, Detroit, MI 48224 (9.65% >> 9.98%)",
+        "10030 Cadieux Rd, Detroit, MI 48224 (10.22% >> 10.53%)",
+        "3344 E 140th St, Cleveland, OH 44120 (9.8% >> 10.21%)",
+        "16851-16881 Greenfield Rd, Detroit, MI 48235 (10.3% >> 10.6%)",
+        "10411-10421 Cadieux Rd, Detroit, MI 48224 (8.91% >> 10.2%)",
+        "16007 Nelacrest Rd, East Cleveland, OH 44112 (12.37% >> 12.64%)",
+        "19751 Marx St, Highland Park, MI 48203 (10.89% >> 11.16%)",
+        "4342-4344 Cortland St, Detroit, MI 48204 (10.34% >> 10.84%)",
+        "1610 E State Fair Ave, Detroit, MI 48203 (13.42% >> 14.47%)",
+        "1630 E State Fair Ave, Detroit, MI 48203 (14.33% >> 15.07%)",
+        "2703-2705 W Grand St, Detroit, MI 48238 (11.52% >> 12.06%)",
+        "7519-7521 Wykes St, Detroit, MI 48210 (11.39% >> 11.95%)",
+        "18980 Fenton St, Detroit, MI 48219 (11.71% >> 12.22%)",
+        "19000 Fenton St, Detroit, MI 48219 (11% >> 11.52%)",
+        "19041 Lenore Ave, Detroit, MI 48219 (8.13% >> 11.94%)",
+        "3310-3312 Sturtevant St, Detroit, MI 48206 (10.49% >> 10.99%)",
+        "10040 Cadieux Rd, Detroit, MI 48224 (10.83% >> 11.33%)",
+        "(S) 9795-9797 Chenlot St, Detroit, MI 48204 (10.53% >> 11.02%)",
+        "2911 Sturtevant St, Detroit, MI 48206 (10.78% >> 10.81%)",
+        "324 Piper Blvd, Detroit, MI 48215 (9.66% >> 10.17%)",
+        "14409 Linnhurst St, Detroit, MI 48205 (10.34% >> 10.89%)",
+        "13523 Glenside Rd, Cleveland, OH 44110 (10% >> 10.43%)",
+        "14881 Greenfield Rd, Detroit, MI 48227 (10.99% >> 11.27%)",
+        "11830 Camden Ave, Detroit, MI 48213 (10.03% >> 10.55%)",
+        "11701 Morang Ave, Detroit, MI 48224 (10.54% >> 10.65%)",
+        "11845 Camden Ave, Detroit, MI 48213 (10.45% >> 10.96%)",
+        "3588 Oakman Blvd, Detroit, MI 48204 (10% >> 10.59%)",
+        "10862 Marne St, Detroit, MI 48224 (10.26% >> 10.87%)",
+        "10717-10719 Bryant Ave, Cleveland, OH 44108 (10.04% >> 10.61%)",
+        "305 Moss St, Highland Park, MI 48203 (10.8% >> 11.45%)",
+        "12580 Maiden St, Detroit, MI 48213 (10.25% >> 10.86%)",
+        "7501 Stockton St, Detroit, MI 48234 (9.95% >> 10.52%)",
+        "18438 Morang Ave, Detroit, MI 48205 (9.88% >> 10.32%)",
+        "3280 W Boston Blvd, Detroit, MI 48206 (9.74% >> 10.26%)",
+        "625 Virginia St, Toledo, OH 43620 (9.79% >> 10.28%)",
+        "10059 Britain St, Detroit, MI 48224 (10.21% >> 10.78%)",
+        "12050 Bryden St, Detroit, MI 48204 (9.76% >> 10.32%)",
+        "10511 Whittier Ave, Detroit, MI 48224 (9.81% >> 10.33%)",
+        "1 Holdings Holcomb St, Detroit, MI 48214 (9.63% >> 9.95%)",
+        "6582 Bewick St, Detroit, MI 48213 (9.7% >> 10.24%)",
+        "1 Holdings Rohns St, Detroit, MI 48214 (9.89% >> 10.22%)",
+        "1 Holdings Belvidere St, Detroit, MI 48214 (9.46% >> 9.77%)",
+        "3784 Seneca St, Detroit, MI 48214 (9.36% >> 9.71%)",
+        "3851 McClellan Ave, Detroit, MI 48214 (9.33% >> 9.68%)",
+        "4101 McClellan Ave, Detroit, MI 48214 (9.3% >> 9.64%)",
+        "4407 McClellan, Detroit, MI 48214 (9.25% >> 9.59%)",
+        "12641 Elmdale St, Detroit, MI 48213 (9.05% >> 9.58%)",
+        "15040 Harper Ave, Detroit, MI 48224 (9.59% >> 10.23%)",
+        "18286 Oakfield Ave, Detroit, MI 48235 (9.24% >> 9.76%)",
+        "1 Holdings French Rd, Detroit, MI 48214 (9.48% >> 9.87%)",
+        "1 Holdings Conner St, Detroit, MI 48215 (9.54% >> 9.92%)",
+        "1 Holdings Montclair St, Detroit, MI 48214 (9.59% >> 9.98%)",
+        "14102 Marlowe St, Detroit, MI 48227 (9.06% >> 9.54%)",
+        "1 Holdings Harding St, Detroit, MI 48214 (9.61% >> 9.99%)",
+        "1 Holdings Kitchener St, Detroit, MI 48215 (9.69% >> 10.09%)",
+        "1 Holdings Tennessee St, Detroit, MI 48215 (9.82% >> 10.18%)",
+        "1 Holdings Navahoe St, Detroit, MI 48215 (9.31% >> 9.68%)",
+        "15930 Monica St, Detroit, MI 48238 (9.45% >> 9.92%)",
+        "18613 Oakfield Ave, Detroit, MI 48235 (9.4% >> 9.88%)",
+        "19003-19005 Moross Rd, Detroit, MI 48224 (9.68% >> 10.18%)",
+        "2518 Glendale Ave, Detroit, MI 48238 (9.65% >> 10.14%)",
+        "1 Holdings Kinafremoha St, Detroit, MI 48215 (9.79% >> 10.21%)",
+        "14606 Kentucky St, Detroit, MI 48238 (9.86% >> 10.37%)",
+        "10110 Cadieux Rd, Detroit, MI 48224 (9.33% >> 9.82%)",
+        "10410 Cadieux Rd, Detroit, MI 48224 (9.8% >> 10.35%)",
+        "11420 Montrose St, Detroit, MI 48227 (9.27% >> 9.73%)",
+        "12091 Montrose St, Detroit, MI 48227 (9.38% >> 9.85%)",
+        "9131 Quincy St, Detroit, MI 48204 (9.46% >> 9.93%)",
+        "10756 Balfour Rd, Detroit, MI 48224 (9.23% >> 9.72%)",
+        "10764 Balfour Rd, Detroit, MI 48224 (9.25% >> 9.73%)",
+        "10924 Balfour Rd, Detroit, MI 48224 (9.26% >> 9.79%)",
+        "14481 Hazelridge St, Detroit, MI 48205 (9.3% >> 9.74%)",
+        "4456 Fairview St, Detroit, MI 48214 (9.19% >> 9.68%)",
+        "3953 Fairview St, Detroit, MI 48214 (9.45% >> 9.93%)",
+        "3955 Lillibridge St, Detroit, MI 48214 (9.34% >> 9.84%)",
+        "3965 Fairview St, Detroit, MI 48214 (9.35% >> 9.88%)",
+        "4444 Lillibridge St, Detroit, MI 48214 (9.38% >> 9.92%)",
+        "1354 W 64th St, Chicago, IL 60636 (4.73% >> 7.77%)",
+        "19750 Marx St, Highland Park, MI 48203 (10.41% >> 11.5%)",
+        "9415-9417 Ravenswood St, Detroit, MI 48204 (12.22% >> 12.82%)",
+        "16085 E Seven Mile, Detroit, MI 48205 (10.48% >> 11.09%)",
+        "(S) 10147 Somerset Ave, Detroit, MI 48224 (10.06% >> 10.59%)",
+        "(S) 616 E 131st St, Cleveland, OH 44108 (11.81% >> 12.38%)",
+        "16520 Ilene St, Detroit, MI 48221 (10.57% >> 11.09%)",
+        "20257 Monica St, Detroit, MI 48221 (9.32% >> 9.59%)",
+        "(S) 10163 Duprey St, Detroit, MI 48224 (10.48% >> 11.02%)",
+        "(S) 11965 Lakepointe St, Detroit, MI 48224 (10.14% >> 10.65%)",
+        "(S) 3510 Ewald Cir, Detroit, MI 48204 (10.51% >> 11.22%)",
+        "618 E 79th St, Chicago, IL 60619 (8.5% >> 8.92%)",
+        "(S) 11310 Abington Ave, Detroit, MI 48227 (9.91% >> 10.22%)",
+        "(S) 14117 Manning St, Detroit, MI 48205 (10.3% >> 10.59%)",
+        "(S) 22233 Lyndon St, Detroit, MI 48223 (10.3% >> 10.65%)",
+        "(S) 9200 Harvard Rd, Detroit, MI 48224 (9.93% >> 10.21%)",
+        "(S) 9624 Abington Ave, Detroit, MI 48227 (10.2% >> 10.48%)",
+        "(S) 1418 W Marquette Rd, Chicago, IL 60636 (9.25% >> 9.73%)",
+        "(S) 19391 Grandview St, Detroit, MI 48219 (10.31% >> 10.59%)",
+        "19535 Fairport St, Detroit, MI 48205 (8.96% >> 9.49%)",
+        "14622 Hubbell Ave, Detroit, MI 48227 (10.37% >> 10.88%)",
+        "8003 S Ingleside Ave, Chicago, IL 60619 (8.41% >> 8.81%)",
+        "13445 Tacoma St, Detroit, MI 48205 (10% >> 10.56%)",
+        "13430 Tacoma St, Detroit, MI 48205 (11.45% >> 11.81%)",
+        "10610 Balfour Rd, Detroit, MI 48224 (10.72% >> 10.94%)",
+        "15611 E Seven Mile Rd, Detroit, MI 48205 (10.71% >> 10.97%)",
+        "18515-18517 Kelly Rd, Detroit, MI 48224 (11.22% >> 11.33%)",
+        "18608-18612 Moross Rd, Detroit, MI 48224 (11.77% >> 12.05%)",
+        "22512 W McNichols Rd, Detroit, MI 48219 (10.67% >> 10.98%)",
+        "9576 Grandmont Ave, Detroit, MI 48227 (10.09% >> 10.29%)"
+      ];
+
+      // Fonction pour traiter les données statiques
+      function processStaticData(data) {
+        const tbody = document.querySelector('#rentDataTable tbody');
+        tbody.innerHTML = ''; // Vider les lignes existantes
+
+        data.forEach((line, index) => {
+          if (line.trim() !== "") { // Ignorer les lignes vides
+            // Utilisation de la ligne telle quelle
+            const matches = line.match(/^(.*) \(([\d.]+)% >> ([\d.]+)%\)$/);
+            if (matches) {
+              const address = matches[1].trim();
+              const oldRentPercentage = parseFloat(matches[2]);
+              const newRentPercentage = parseFloat(matches[3]);
+              const change = newRentPercentage - oldRentPercentage;
+              const indicator = change > 0 ? '↑' : '↓';
+              const className = change > 0 ? 'increase' : 'decrease';
+
+              const row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${address}</td>
+                    <td>${oldRentPercentage}%</td>
+                    <td>${newRentPercentage}%</td>
+                    <td class="${className}">${indicator}</td>
+                </tr>`;
+              tbody.innerHTML += row;
+            } else {
+              console.log(`Format incorrect à la ligne ${index + 1}: ${line}`);
+            }
+          }
+        });
+
+        console.log(`${data.length} lignes traitées.`);
+      }
+
+      // Appeler la fonction pour traiter les données statiques
+      processStaticData(testData);
+
+    </script>
+  </body>
+
+</html>
